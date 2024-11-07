@@ -2,6 +2,9 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { authController } from "./auth.js";
 import { dbMiddleware } from "./middlewares/db.js";
+import { config } from "dotenv";
+
+config();
 
 const app = new Hono()
   .basePath("/api")
