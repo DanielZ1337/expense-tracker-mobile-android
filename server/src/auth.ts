@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { hash } from "bcrypt";
+import { compare, hash } from "bcrypt";
 import type { HonoContext } from "./types/hono-context.js";
 
 export const authController = new Hono<HonoContext>()
@@ -27,6 +27,40 @@ export const authController = new Hono<HonoContext>()
 
     return c.json({ message: "Registered successfully", user });
   })
-  .get("/login", (c) => {
-    return c.json({ message: "login" });
+  .post("/login", async (c) => {
+    const { email, password } = await c.req.json();
+
+    if (!email || !password) {
+      return c.json({ message: "Email and password are required" }, 400);
+    }
+
+    const { db } = c.var;
+
+    const user = await db.user.findFirst({
+      where: {
+        email,
+      },
+    });
+
+    if (!user) {
+      return c.json({ message: "Invalid email or password" }, 401);
+    }
+
+    const isPasswordValid = await compare(password, user.password);
+    if (!isPasswordValid) {
+      return c.json({ message: "Invalid email or password" }, 401);
+    }
+
+    const token = await db.token.create({
+      data: {
+        user: {
+          connect: {
+            id: user.id,
+          },
+        },
+        token: crypto.randomUUID(),
+      },
+    });
+
+    return c.json({ message: "Logged in successfully", token });
   });

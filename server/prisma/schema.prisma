@@ -18,6 +18,7 @@ model User {
   email     String   @unique
   name      String
   password  String
+  tokens    Token[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -56,4 +57,13 @@ model Transaction {
   description String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Token {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
