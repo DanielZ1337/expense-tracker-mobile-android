@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: expense-tracker-postgres-dev
+    environment:
+      POSTGRES_USER: nissedavid123
+      POSTGRES_PASSWORD: nissedavid123
+      POSTGRES_DB: nissedavid123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - pg_network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: expense-tracker-pgadmin-dev
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com # Replace with your desired email
+      PGADMIN_DEFAULT_PASSWORD: admin # Replace with your desired password
+    ports:
+      - "5959:80" # Access pgAdmin at http://localhost:8080
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - pg_network
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  pg_network:
+    driver: bridge
