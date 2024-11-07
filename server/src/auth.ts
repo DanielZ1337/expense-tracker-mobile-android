@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { compare, hash } from "bcrypt";
+import jwt from "jsonwebtoken";
 import type { HonoContext } from "./types/hono-context.js";
+import type { JwtPayload } from "./types/jwt.js";
 
 export const authController = new Hono<HonoContext>()
   .post("/register", async (c) => {
@@ -51,6 +53,16 @@ export const authController = new Hono<HonoContext>()
       return c.json({ message: "Invalid email or password" }, 401);
     }
 
+    const jwtPayload: JwtPayload = {
+      email: user.email,
+      name: user.name,
+      userId: user.id,
+    };
+
+    const signedToken = jwt.sign(jwtPayload, process.env.AUTH_SECRET!, {
+      expiresIn: "1h",
+    });
+
     const token = await db.token.create({
       data: {
         user: {
@@ -58,9 +70,22 @@ export const authController = new Hono<HonoContext>()
             id: user.id,
           },
         },
-        token: crypto.randomUUID(),
+        token: signedToken,
       },
     });
 
-    return c.json({ message: "Logged in successfully", token });
+    const decoded = jwt.verify(
+      token.token,
+      process.env.AUTH_SECRET!,
+    ) as jwt.JwtPayload & JwtPayload;
+
+    if (!decoded.iat || !decoded.exp) {
+      return c.json({ message: "Failed to decode token" }, 401);
+    }
+
+    if (decoded.iat > decoded.exp) {
+      return c.json({ message: "Token has expired" }, 401);
+    }
+
+    return c.json({ message: "Logged in successfully", token, decoded });
   });
