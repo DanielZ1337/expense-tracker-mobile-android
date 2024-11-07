@@ -2,8 +2,13 @@
   "name": "server",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc"
+    "server:dev": "tsx watch src/index.ts",
+    "dev": "concurrently -n server,db -c blue,green \"npm run server:dev\" \"npm run db:generate:watch\"",
+    "build": "tsc",
+    "db:generate": "prisma generate",
+    "db:generate:watch": "prisma generate --watch",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.5",
@@ -16,6 +21,7 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/node": "^20.17.6",
+    "concurrently": "^9.1.0",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3"
   }
