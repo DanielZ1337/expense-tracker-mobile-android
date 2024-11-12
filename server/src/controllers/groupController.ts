@@ -262,6 +262,93 @@ export const groupController = new Hono<HonoContext>()
 
 		return c.json(members)
 	})
+	.get('/:groupId/debts', async (c) => {
+		const { db, user } = c.var
+		const groupId = Number.parseInt(c.req.param('groupId'))
+
+		// Check if the user is a member of the group
+		const isMember = await db.groupMember.findFirst({
+			where: { groupId, userId: user.id },
+		})
+
+		if (!isMember) {
+			return c.json({ message: 'You are not a member of this group' }, 401)
+		}
+
+		// Fetch expenses and participants
+		const expenses = await db.expense.findMany({
+			where: {
+				groupExpenses: { some: { groupId } },
+			},
+			include: {
+				payer: true,
+				participants: {
+					include: {
+						user: true,
+					},
+				},
+			},
+		})
+
+		// Calculate net balance per user
+		const userBalances: { [userId: number]: number } = {}
+		const transactions: {
+			expenseId: number
+			title: string
+			amount: number
+			date: Date
+			payer: string
+			netBalance: number
+		}[] = []
+
+		for (const expense of expenses) {
+			for (const participant of expense.participants) {
+				const userId = participant.userId
+				const net = participant.paidAmount - participant.owedAmount
+
+				userBalances[userId] = (userBalances[userId] || 0) + net
+
+				if (userId === user.id) {
+					transactions.push({
+						expenseId: expense.id,
+						title: expense.title,
+						amount: expense.amount,
+						date: expense.date,
+						payer: expense.payer.name,
+						netBalance: net,
+					})
+				}
+			}
+		}
+
+		// Prepare response
+		const balance = userBalances[user.id] || 0
+		const status = balance >= 0 ? 'owed' : 'owing'
+
+		return c.json({
+			userId: user.id,
+			totalBalance: Math.abs(balance),
+			netBalance: balance,
+			expenses: expenses.map((expense) => ({
+				id: expense.id,
+				title: expense.title,
+				amount: expense.amount,
+				date: expense.date,
+				payer: expense.payer.name,
+				participants: expense.participants.map((participant) => ({
+					userId: participant.userId,
+					name: participant.user.name,
+					email: participant.user.email,
+					paidAmount: participant.paidAmount,
+					owedAmount: participant.owedAmount,
+					isPaid: participant.paidAmount > participant.owedAmount,
+				})),
+				isPaid: expense.participants.some((participant) => participant.paidAmount > 0),
+			})),
+			status,
+			transactions,
+		})
+	})
 	.get('/:groupId/expenses', async (c) => {
 		const { db, user } = c.var
 
@@ -316,6 +403,7 @@ export const groupController = new Hono<HonoContext>()
 									},
 								},
 								paidAmount: true,
+								owedAmount: true,
 							},
 						},
 					},
@@ -332,36 +420,30 @@ export const groupController = new Hono<HonoContext>()
 	})
 	.post('/:groupId/expenses', async (c) => {
 		const { db } = c.var
-
 		const groupId = Number.parseInt(c.req.param('groupId'))
 
-		const { amount, date, payerEmail, title } = await c.req.json<{
+		const { amount, date, payerEmail, title, participantEmails } = await c.req.json<{
 			amount: number
 			date: string | undefined
 			payerEmail: string
 			title: string
+			participantEmails?: string[]
 		}>()
 
-		const payer = await db.user.findFirst({
-			where: {
-				email: payerEmail,
-			},
-			select: {
-				id: true,
-				name: true,
-				email: true,
-			},
-		})
+		// Fetch payer and participants
+		const payer = await db.user.findFirst({ where: { email: payerEmail } })
+		const participants = participantEmails
+			? await db.user.findMany({ where: { email: { in: participantEmails } } })
+			: await db.groupMember
+					.findMany({ where: { groupId }, include: { user: true } })
+					.then((members) => members.map((m) => m.user))
 
-		if (!payer) {
-			return c.json({ message: 'Payer not found' }, 401)
+		if (!payer || !participants.length) {
+			return c.json({ message: 'Payer or participants not found' }, 400)
 		}
 
-		const members = await db.groupMember.findMany({
-			where: {
-				groupId,
-			},
-		})
+		// Calculate owed amount per participant
+		const splitAmount = Math.round(amount / participants.length)
 
 		const expense = await db.groupExpense.create({
 			data: {
@@ -370,11 +452,7 @@ export const groupController = new Hono<HonoContext>()
 						amount,
 						date: date ?? new Date(),
 						title,
-						payer: {
-							connect: {
-								id: payer.id,
-							},
-						},
+						payer: { connect: { id: payer.id } },
 						attachments: {
 							createMany: {
 								data: [],
@@ -382,19 +460,16 @@ export const groupController = new Hono<HonoContext>()
 						},
 						participants: {
 							createMany: {
-								data: members.map((member) => ({
-									userId: member.userId,
-									paidAmount: 0,
+								data: participants.map((participant) => ({
+									userId: participant.id,
+									paidAmount: participant.id === payer.id ? amount : 0,
+									owedAmount: splitAmount,
 								})),
 							},
 						},
 					},
 				},
-				group: {
-					connect: {
-						id: groupId,
-					},
-				},
+				group: { connect: { id: groupId } },
 			},
 		})
 
@@ -426,49 +501,50 @@ export const groupController = new Hono<HonoContext>()
 	})
 	.put('/:groupId/expenses/:expenseId/pay', async (c) => {
 		const { db, user } = c.var
-
 		const groupId = Number.parseInt(c.req.param('groupId'))
+		const expenseId = Number.parseInt(c.req.param('expenseId'))
 
-		const { amount } = await c.req.json<{
-			amount: number
-		}>()
+		const { amount } = await c.req.json<{ amount: number }>()
 
-		const expense = await db.groupExpense.findFirst({
+		// Fetch the expense, ensuring it belongs to the group
+		const expense = await db.expense.findFirst({
 			where: {
-				id: Number.parseInt(c.req.param('expenseId')),
-				groupId,
+				id: expenseId,
+				groupExpenses: {
+					some: {
+						groupId: groupId,
+					},
+				},
 			},
 			include: {
-				expense: true,
+				participants: true,
 			},
 		})
 
 		if (!expense) {
-			return c.json({ message: 'Expense not found' }, 401)
+			return c.json({ message: 'Expense not found' }, 404)
 		}
 
-		if (amount > expense.expense.amount) {
-			return c.json({ message: 'Amount exceeds expense amount' }, 401)
+		if (amount > expense.amount) {
+			return c.json({ message: 'Amount exceeds expense amount' }, 400)
 		}
 
-		const expenseParticipants = await db.expenseParticipants.findFirst({
+		// Verify that the user is a participant of the expense
+		const expenseParticipant = await db.expenseParticipants.findFirst({
 			where: {
-				expenseId: expense.id,
+				expenseId,
 				userId: user.id,
 			},
 		})
 
-		if (!expenseParticipants) {
-			return c.json({ message: 'You are not a participant of this expense' }, 401)
+		if (!expenseParticipant) {
+			return c.json({ message: 'You are not a participant of this expense' }, 403)
 		}
 
+		// Update the paid amount
 		await db.expenseParticipants.update({
-			where: {
-				id: expenseParticipants.id,
-			},
-			data: {
-				paidAmount: amount,
-			},
+			where: { id: expenseParticipant.id },
+			data: { paidAmount: amount },
 		})
 
 		return c.json({ message: 'Payment updated successfully' })
