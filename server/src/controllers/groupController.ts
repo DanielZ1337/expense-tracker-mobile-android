@@ -315,6 +315,7 @@ export const groupController = new Hono<HonoContext>()
 										email: true,
 									},
 								},
+								paidAmount: true,
 							},
 						},
 					},
@@ -383,6 +384,7 @@ export const groupController = new Hono<HonoContext>()
 							createMany: {
 								data: members.map((member) => ({
 									userId: member.userId,
+									paidAmount: 0,
 								})),
 							},
 						},
@@ -395,6 +397,27 @@ export const groupController = new Hono<HonoContext>()
 				},
 			},
 		})
+
+		return c.json(expense)
+	})
+	.get('/:groupId/expenses/:expenseId', async (c) => {
+		const { db, user } = c.var
+
+		const groupId = Number.parseInt(c.req.param('groupId'))
+
+		const expense = await db.groupExpense.findFirst({
+			where: {
+				id: Number.parseInt(c.req.param('expenseId')),
+				groupId,
+			},
+			include: {
+				expense: true,
+			},
+		})
+
+		if (!expense) {
+			return c.json({ message: 'Expense not found' }, 401)
+		}
 
 		return c.json(expense)
 	})
@@ -415,23 +438,38 @@ export const groupController = new Hono<HonoContext>()
 				id: Number.parseInt(c.req.param('expenseId')),
 				groupId,
 			},
+			include: {
+				expense: true,
+			},
 		})
 
 		if (!expense) {
 			return c.json({ message: 'Expense not found' }, 401)
 		}
 
-		// await db.expenseParticipants.update({
-		// 	where: {
-		// 		expenseId: expense.id,
-		// 		userId: user.id,
-		// 	},
-		// 	data: {
-		// 		paidAmount: amount,
-		// 	},
-		// })
+		if (amount > expense.expense.amount) {
+			return c.json({ message: 'Amount exceeds expense amount' }, 401)
+		}
 
-		return c.json({ message: 'Not implemented' })
+		const expenseParticipants = await db.expenseParticipants.findFirst({
+			where: {
+				expenseId: expense.id,
+				userId: user.id,
+			},
+		})
+
+		if (!expenseParticipants) {
+			return c.json({ message: 'You are not a participant of this expense' }, 401)
+		}
+
+		await db.expenseParticipants.update({
+			where: {
+				id: expenseParticipants.id,
+			},
+			data: {
+				paidAmount: amount,
+			},
+		})
 
 		return c.json({ message: 'Payment updated successfully' })
 	})
