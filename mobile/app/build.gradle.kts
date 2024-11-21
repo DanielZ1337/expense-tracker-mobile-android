@@ -62,5 +62,4 @@ dependencies {
     implementation(libs.androidx.security.crypto)
     implementation(libs.moshi.kotlin)
     implementation(libs.moshi)
-
 }

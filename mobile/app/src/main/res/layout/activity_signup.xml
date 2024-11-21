@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -8,15 +7,6 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
-        <TextView
-            android:id="@+id/textView3"
-            android:layout_width="206dp"
-            android:layout_height="38dp"
-            android:text="Username"
-            android:textSize="24sp"
-            tools:layout_editor_absoluteX="92dp"
-            tools:layout_editor_absoluteY="87dp" />
 
         <Button
             android:id="@+id/button"
@@ -32,8 +22,8 @@
             android:layout_height="wrap_content"
             android:ems="10"
             android:inputType="textEmailAddress"
-            tools:layout_editor_absoluteX="92dp"
-            tools:layout_editor_absoluteY="138dp" />
+            tools:layout_editor_absoluteX="96dp"
+            tools:layout_editor_absoluteY="241dp" />
 
         <EditText
             android:id="@+id/editTextTextPassword"
@@ -52,36 +42,27 @@
             android:textSize="24sp"
             tools:layout_editor_absoluteX="96dp"
             tools:layout_editor_absoluteY="311dp" />
-
-        <TextView
-            android:id="@+id/textView3"
-            android:layout_width="206dp"
-            android:layout_height="38dp"
-            android:text="Email"
-            android:textSize="24sp"
-            tools:layout_editor_absoluteX="92dp"
-            tools:layout_editor_absoluteY="196dp" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <EditText
-        android:id="@+id/editTextTextEmailAddress3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textEmailAddress"
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="178dp"
+        android:layout_height="32dp"
+        android:text="Username"
+        android:textSize="24sp"
         tools:layout_editor_absoluteX="96dp"
-        tools:layout_editor_absoluteY="241dp" />
+        tools:layout_editor_absoluteY="189dp" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/button2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Login"
+        android:text="Sign up"
         tools:layout_editor_absoluteX="158dp"
         tools:layout_editor_absoluteY="507dp" />
 
     <EditText
-        android:id="@+id/editTextTextEmailAddress"
+        android:id="@+id/editTextTextEmailAddress2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
@@ -90,7 +71,7 @@
         tools:layout_editor_absoluteY="241dp" />
 
     <EditText
-        android:id="@+id/editTextTextPassword"
+        android:id="@+id/editTextTextPassword2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
@@ -99,7 +80,7 @@
         tools:layout_editor_absoluteY="360dp" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/textView5"
         android:layout_width="148dp"
         android:layout_height="39dp"
         android:text="Password"

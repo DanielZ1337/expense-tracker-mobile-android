@@ -37,8 +37,10 @@ androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navi
 androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationUiKtx" }
 moshi = { module = "com.squareup.moshi:moshi", version.ref = "moshiVersion" }
 moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshiVersion" }
+moshi-adapters = { module = 'com.squareup.moshi:moshi-adapters', version.ref="moshiVersion"}
 moshi-kotlin-codegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshiVersion" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofitVersion" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
