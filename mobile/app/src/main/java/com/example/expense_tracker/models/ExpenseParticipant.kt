@@ -1,9 +1,7 @@
 package com.example.expense_tracker.models
 
-import com.squareup.moshi.JsonClass
 import java.time.LocalDateTime
 
-@JsonClass(generateAdapter = true)
 data class ExpenseParticipant(
     val id: Int,
     val expenseId: Int,

@@ -6,43 +6,43 @@ import retrofit2.http.*
 
 interface GroupService {
 
-    @GET("groups")
+    @GET("/api/groups")
     suspend fun getGroups(): List<Group>
 
-    @POST("groups")
+    @POST("/api/groups")
     suspend fun createGroup(@Body request: CreateGroupRequest): Group
 
-    @GET("groups/{groupId}")
+    @GET("/api/groups/{groupId}")
     suspend fun getGroup(@Path("groupId") groupId: Int): Group
 
-    @DELETE("groups/{groupId}")
+    @DELETE("/api/groups/{groupId}")
     suspend fun deleteGroup(@Path("groupId") groupId: Int)
 
-    @POST("groups/{groupId}/members")
+    @POST("/api/groups/{groupId}/members")
     suspend fun addMembers(
         @Path("groupId") groupId: Int,
         @Body request: AddMembersRequest
     )
 
-    @DELETE("groups/{groupId}/members")
+    @DELETE("/api/groups/{groupId}/members")
     suspend fun removeMembers(
         @Path("groupId") groupId: Int,
         @Body request: RemoveMembersRequest
     )
 
-    @PUT("groups/{groupId}/members")
+    @PUT("/api/groups/{groupId}/members")
     suspend fun updateMembers(
         @Path("groupId") groupId: Int,
         @Body request: UpdateMembersRequest
     )
 
-    @GET("groups/{groupId}/debts")
+    @GET("/api/groups/{groupId}/debts")
     suspend fun getGroupDebts(@Path("groupId") groupId: Int)
 
-    @GET("groups/{groupId}/expenses")
+    @GET("/api/groups/{groupId}/expenses")
     suspend fun getGroupExpenses(@Path("groupId") groupId: Int): List<GroupExpense>
 
-    @POST("groups/{groupId}/expenses")
+    @POST("/api/groups/{groupId}/expenses")
     suspend fun createGroupExpense(
         @Path("groupId") groupId: Int,
         @Body request: CreateExpenseRequest

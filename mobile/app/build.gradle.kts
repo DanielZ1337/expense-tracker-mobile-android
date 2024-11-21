@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    kotlin("kapt")
 }
 
 android {
@@ -61,8 +60,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.security.crypto)
-    implementation(libs.moshi.kotlin) // Add this line'
+    implementation(libs.moshi.kotlin)
     implementation(libs.moshi)
-    kapt(libs.moshi.kotlin.codegen)
 
 }
