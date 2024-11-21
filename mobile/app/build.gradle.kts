@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.androidx.security.crypto)
     implementation(libs.moshi.kotlin) // Add this line'
     implementation(libs.moshi)
+    implementation(libs.moshi.adapters)
     kapt(libs.moshi.kotlin.codegen)
 
 }

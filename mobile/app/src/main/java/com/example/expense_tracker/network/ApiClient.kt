@@ -3,6 +3,7 @@ package com.example.expense_tracker.network
 
 import android.content.Context
 import android.util.Log
+import com.example.expense_tracker.adapters.LocalDateJsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.OkHttpClient
@@ -18,6 +19,7 @@ object ApiClient {
 
     private val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
+        .add(LocalDateJsonAdapter())
         .build()
 
     fun init(context: Context) {
@@ -37,7 +39,7 @@ object ApiClient {
             .build()
 
         retrofit = Retrofit.Builder()
-            .baseUrl("http://localhost:3000")
+            .baseUrl("http://10.0.2.2:3000")
             .client(httpClient)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
