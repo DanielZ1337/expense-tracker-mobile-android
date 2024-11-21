@@ -8,15 +8,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <TextView
-            android:id="@+id/textView3"
-            android:layout_width="88dp"
-            android:layout_height="43dp"
-            android:text="Email"
-            android:textSize="24sp"
-            tools:layout_editor_absoluteX="96dp"
-            tools:layout_editor_absoluteY="189dp" />
-
         <Button
             android:id="@+id/button"
             android:layout_width="wrap_content"
@@ -55,9 +46,9 @@
 
     <TextView
         android:id="@+id/textView4"
-        android:layout_width="88dp"
-        android:layout_height="43dp"
-        android:text="Email"
+        android:layout_width="178dp"
+        android:layout_height="32dp"
+        android:text="Username"
         android:textSize="24sp"
         tools:layout_editor_absoluteX="96dp"
         tools:layout_editor_absoluteY="189dp" />
