@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    kotlin("kapt")
 }
 
 android {
@@ -51,4 +52,17 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.retrofit)
+    implementation(libs.converter.moshi)
+
+    implementation(libs.moshi)
+    implementation(libs.logging.interceptor)
+
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.androidx.security.crypto)
+    implementation(libs.moshi.kotlin) // Add this line'
+    implementation(libs.moshi)
+    kapt(libs.moshi.kotlin.codegen)
+
 }
