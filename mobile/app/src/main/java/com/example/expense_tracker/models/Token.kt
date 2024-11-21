@@ -1,12 +1,12 @@
 package com.example.expense_tracker.models
 
-import java.time.LocalDateTime
+import java.time.Instant
 
 data class Token(
     val id: Int,
     val userId: Int,
     val token: String,
-    val createdAt: LocalDateTime,
-    val updatedAt: LocalDateTime
+    val createdAt: Instant,
+    val updatedAt: Instant
 )
 

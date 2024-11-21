@@ -3,7 +3,7 @@ package com.example.expense_tracker.network
 
 import android.content.Context
 import android.util.Log
-import com.example.expense_tracker.adapters.LocalDateJsonAdapter
+import com.example.expense_tracker.adapters.InstantAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.OkHttpClient
@@ -18,8 +18,8 @@ object ApiClient {
         private set
 
     private val moshi = Moshi.Builder()
+        .add(InstantAdapter())
         .add(KotlinJsonAdapterFactory())
-        .add(LocalDateJsonAdapter())
         .build()
 
     fun init(context: Context) {

@@ -1,5 +1,6 @@
 package com.example.expense_tracker
 
+import android.net.http.HttpException
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -17,9 +18,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.expense_tracker.databinding.ActivityMainBinding
 import com.example.expense_tracker.network.ApiClient
 import com.example.expense_tracker.network.repositories.AuthRepository
+import com.example.expense_tracker.network.repositories.UserRepository
 import com.example.expense_tracker.network.requests.LoginRequest
 import com.example.expense_tracker.network.requests.RegisterRequest
 import kotlinx.coroutines.launch
+import java.io.IOException
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -29,38 +33,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(null, "Initializing retrofit");
         ApiClient.init(this);
 
-        authRepository = AuthRepository();
-
-        lifecycleScope.launch {
-            try {
-                Log.d(null, "Sending request")
-                // Replace with valid test credentials
-                val registerRequest = RegisterRequest(
-                    name = "Test User",
-                    email = "test@example.com",
-                    password = "password123",
-                    passwordConfirmation = "password123"
-                )
-                val user = authRepository.register(registerRequest)
-                // Log the response
-                Log.d("MainActivity", "Registration successful: $user")
-
-                // Now test login
-                val loginRequest = LoginRequest(
-                    email = "test@example.com",
-                    password = "password123"
-                )
-                val tokenResponse = authRepository.login(loginRequest)
-                Log.d("MainActivity", "Login successful: $tokenResponse")
-
-                // You can also test other API methods similarly
-            } catch (e: Exception) {
-                Log.e("MainActivity", "API call failed", e)
-            }
-        }
+        authRepository = AuthRepository()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -84,6 +59,16 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+        // Set up FAB to trigger API test
+        binding.appBarMain.fab.setOnClickListener { view ->
+            Snackbar.make(view, "Testing API...", Snackbar.LENGTH_LONG)
+                .setAction("Action", null)
+                .setAnchorView(R.id.fab).show()
+
+            // Trigger API test when FAB is clicked
+            testApi()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -95,5 +80,33 @@ class MainActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    }
+
+    private fun testApi() {
+        lifecycleScope.launch {
+            try {
+                // Login with the new user
+                val loginRequest = LoginRequest(
+                    email = "test@example.com",
+                    password = "password123"
+                )
+                val tokenResponse = authRepository.login(loginRequest)
+                Log.d("MainActivity", "Login successful: $tokenResponse")
+
+                // You can add more API tests here
+
+                val userRepository = UserRepository()
+
+                val userProfileResponse = userRepository.getUserProfile()
+                Log.d("MainActivity", "User profile: $userProfileResponse")
+
+            } catch (e: IOException) {
+                Log.e("MainActivity", "Network error", e)
+            } catch (e: HttpException) {
+                Log.e("MainActivity", "HTTP error", e)
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Unexpected error", e)
+            }
+        }
     }
 }
