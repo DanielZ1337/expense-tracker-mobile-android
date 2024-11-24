@@ -97,10 +97,13 @@ export const groupController = new Hono<HonoContext>()
           },
         },
       },
-      select: {
-        id: true,
-        name: true,
-        description: true,
+      include: {
+        members: {
+          include: {
+            user: true,
+          },
+        },
+        expenses: true,
       },
     });
 

@@ -1,4 +1,3 @@
-// CreateGroupDialog.kt
 package com.example.expense_tracker.ui.groups
 
 import android.app.Dialog
@@ -30,11 +29,9 @@ class CreateGroupDialog(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Remove the dialog title
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         setContentView(R.layout.dialog_create_group)
 
-        // Initialize views
         nameEditText = findViewById(R.id.editTextGroupName)
         descriptionEditText = findViewById(R.id.editTextGroupDescription)
         participantsEditText = findViewById(R.id.editTextParticipantEmails)
@@ -57,7 +54,6 @@ class CreateGroupDialog(
                 emptyList()
             }
 
-            // Proceed to create the group
             createGroup(name, if (description.isEmpty()) null else description, if (participantEmails.isEmpty()) null else participantEmails)
         }
 
@@ -71,7 +67,6 @@ class CreateGroupDialog(
             try {
                 val response = groupRepository.createGroup(CreateGroupRequest(name, description, participantEmails))
                 Toast.makeText(activity, "Group '${response.name}' created successfully.", Toast.LENGTH_SHORT).show()
-                // Optionally, refresh the groups list in GroupManagementActivity
                 if (activity is GroupManagementActivity) {
                     activity.refreshGroups()
                 }

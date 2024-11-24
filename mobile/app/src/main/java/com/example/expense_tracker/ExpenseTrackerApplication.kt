@@ -1,4 +1,3 @@
-// ExpenseTrackerApplication.kt
 package com.example.expense_tracker
 
 import android.app.Application

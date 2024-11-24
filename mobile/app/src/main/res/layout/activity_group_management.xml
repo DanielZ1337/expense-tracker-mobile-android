@@ -33,7 +33,7 @@
         android:layout_width="408dp"
         android:layout_height="585dp"
         tools:layout_editor_absoluteX="1dp"
-        tools:layout_editor_absoluteY="70dp" />
+        tools:layout_editor_absoluteY="120dp" />
 
     <Button
         android:id="@+id/newGroupButton"
