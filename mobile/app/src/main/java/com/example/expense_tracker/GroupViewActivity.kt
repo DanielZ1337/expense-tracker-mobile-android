@@ -47,7 +47,7 @@ class GroupViewActivity : AppCompatActivity() {
             insets
         }
 
-        authRepository = AuthRepository()
+        authRepository = AuthRepository.getInstance()
         groupRepository = GroupRepository()
         expenseRepository = ExpenseRepository()
 

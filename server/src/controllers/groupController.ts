@@ -3,10 +3,10 @@ import type { HonoContext } from "../types/hono-context.js";
 import { groupMemberMiddleware } from "../middlewares/group-member.js";
 
 export const groupController = new Hono<HonoContext>()
-  .get("/", (c) => {
+  .get("/", async (c) => {
     const { db, user } = c.var;
 
-    const groups = db.group.findMany({
+    const groups = await db.group.findMany({
       where: {
         members: {
           some: {
@@ -14,10 +14,9 @@ export const groupController = new Hono<HonoContext>()
           },
         },
       },
-      select: {
-        id: true,
-        name: true,
-        description: true,
+      include: {
+        members: true,
+        expenses: true,
       },
     });
 
@@ -67,7 +66,17 @@ export const groupController = new Hono<HonoContext>()
       },
     });
 
-    return c.json(group);
+    const newGroup = await db.group.findFirst({
+      where: {
+        id: group.id,
+      },
+      include: {
+        members: true,
+        expenses: true,
+      },
+    });
+
+    return c.json(newGroup);
   })
   .use("/:groupId", async (c, next) => {
     const groupIdMiddlewareHandler = groupMemberMiddleware(

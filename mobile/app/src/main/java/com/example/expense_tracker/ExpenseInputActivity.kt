@@ -41,7 +41,7 @@ class ExpenseInputActivity : AppCompatActivity() {
             insets
         }
 
-        authRepository = AuthRepository()
+        authRepository = AuthRepository.getInstance()
         groupRepository = GroupRepository()
 
 

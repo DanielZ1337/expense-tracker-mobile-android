@@ -31,7 +31,7 @@ class SignupActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         ApiClient.init(this);
 
-        authRepository = AuthRepository()
+        authRepository = AuthRepository.getInstance()
 
 
         val oldbinding = ActivityMainBinding.inflate(layoutInflater)

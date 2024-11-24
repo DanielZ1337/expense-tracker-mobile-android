@@ -11,4 +11,4 @@ data class Group(
     val updatedAt: Instant,
     val members: List<GroupMember>? = null,
     val expenses: List<GroupExpense>? = null
-) : Serializable
+)
