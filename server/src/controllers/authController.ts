@@ -1,88 +1,131 @@
-import { Hono } from 'hono'
-import { compare, hash } from 'bcrypt'
-import jwt from 'jsonwebtoken'
-import type { HonoContext } from '../types/hono-context.js'
-import type { JwtPayload } from '../types/jwt.js'
+import { Hono } from "hono";
+import { compare, hash } from "bcrypt";
+import jwt from "jsonwebtoken";
+import type { HonoContext } from "../types/hono-context.js";
+import type { JwtPayload } from "../types/jwt.js";
 
 export const authController = new Hono<HonoContext>()
-	.post('/register', async (c) => {
-		const { db } = c.var
-		const { email, password, name, passwordConfirmation } = await c.req.json()
+  .post("/register", async (c) => {
+    const { db } = c.var;
+    const { email, password, name, passwordConfirmation } = await c.req.json();
 
-		if (!email || !password || !name || !passwordConfirmation) {
-			return c.json({ message: 'Email and password are required' }, 400)
-		}
+    if (!email || !password || !name || !passwordConfirmation) {
+      return c.json({ message: "Email and password are required" }, 400);
+    }
 
-		if (password !== passwordConfirmation) {
-			return c.json({ message: 'Passwords do not match' }, 400)
-		}
+    if (password !== passwordConfirmation) {
+      return c.json({ message: "Passwords do not match" }, 400);
+    }
 
-		const hashedPassword = await hash(password, 10)
+    const hashedPassword = await hash(password, 10);
 
-		const user = await db.user.create({
-			data: {
-				email,
-				name,
-				password: hashedPassword,
-			},
-		})
+    const user = await db.user.create({
+      data: {
+        email,
+        name,
+        password: hashedPassword,
+      },
+    });
 
-		return c.json({ message: 'Registered successfully', user })
-	})
-	.post('/login', async (c) => {
-		const { email, password } = await c.req.json()
+    return c.json({ message: "Registered successfully", user });
+  })
+  .post("/login", async (c) => {
+    const { email, password } = await c.req.json();
 
-		if (!email || !password) {
-			return c.json({ message: 'Email and password are required' }, 400)
-		}
+    if (!email || !password) {
+      return c.json({ message: "Email and password are required" }, 400);
+    }
 
-		const { db } = c.var
+    const { db } = c.var;
 
-		const user = await db.user.findFirst({
-			where: {
-				email,
-			},
-		})
+    const user = await db.user.findFirst({
+      where: {
+        email,
+      },
+    });
 
-		if (!user) {
-			return c.json({ message: 'Invalid email or password' }, 401)
-		}
+    if (!user) {
+      return c.json({ message: "Invalid email or password" }, 401);
+    }
 
-		const isPasswordValid = await compare(password, user.password)
-		if (!isPasswordValid) {
-			return c.json({ message: 'Invalid email or password' }, 401)
-		}
+    const isPasswordValid = await compare(password, user.password);
+    if (!isPasswordValid) {
+      return c.json({ message: "Invalid email or password" }, 401);
+    }
 
-		const jwtPayload: JwtPayload = {
-			email: user.email,
-			name: user.name,
-			userId: user.id,
-		}
+    const jwtPayload: JwtPayload = {
+      email: user.email,
+      name: user.name,
+      userId: user.id,
+    };
 
-		const signedToken = jwt.sign(jwtPayload, process.env.AUTH_SECRET!, {
-			expiresIn: '1h',
-		})
+    const signedToken = jwt.sign(jwtPayload, process.env.AUTH_SECRET!, {
+      expiresIn: "1h",
+    });
 
-		const token = await db.token.create({
-			data: {
-				user: {
-					connect: {
-						id: user.id,
-					},
-				},
-				token: signedToken,
-			},
-		})
+    const token = await db.token.create({
+      data: {
+        user: {
+          connect: {
+            id: user.id,
+          },
+        },
+        token: signedToken,
+      },
+    });
 
-		const decoded = jwt.verify(token.token, process.env.AUTH_SECRET!) as jwt.JwtPayload & JwtPayload
+    const decoded = jwt.verify(
+      token.token,
+      process.env.AUTH_SECRET!,
+    ) as jwt.JwtPayload & JwtPayload;
 
-		if (!decoded.iat || !decoded.exp) {
-			return c.json({ message: 'Failed to decode token' }, 401)
-		}
+    if (!decoded.iat || !decoded.exp) {
+      return c.json({ message: "Failed to decode token" }, 401);
+    }
 
-		if (decoded.iat > decoded.exp) {
-			return c.json({ message: 'Token has expired' }, 401)
-		}
+    if (decoded.iat > decoded.exp) {
+      return c.json({ message: "Token has expired" }, 401);
+    }
 
-		return c.json({ message: 'Logged in successfully', token, decoded })
-	})
+    return c.json({ message: "Logged in successfully", token, decoded });
+  })
+  .get("/session", async (c) => {
+    const authHeader = c.req.header("Authorization");
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return c.json(null, 401);
+    }
+
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+
+    try {
+      const decoded = jwt.verify(token, process.env.AUTH_SECRET!) as JwtPayload;
+
+      const { db } = c.var;
+
+      const storedToken = await db.token.findFirst({
+        where: { token },
+      });
+
+      if (!storedToken) {
+        return c.json(null, 401);
+      }
+
+      const user = await db.user.findUnique({
+        where: { id: decoded.userId },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+        },
+      });
+
+      if (!user) {
+        return c.json(null, 404);
+      }
+
+      return c.json({ user });
+    } catch (error) {
+      return c.json(null, 401);
+    }
+  });

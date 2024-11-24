@@ -1,4 +1,3 @@
-// NetworkModule.kt
 package com.example.expense_tracker.network
 
 import android.content.Context
@@ -39,22 +38,22 @@ object ApiClient {
             .build()
 
         retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:3000")
+            .baseUrl("http://10.0.2.2:3000") // Replace with your backend URL
             .client(httpClient)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
 
-        Log.d(null, "Initialized retrofit");
+        Log.d("ApiClient", "Initialized Retrofit")
     }
 
     fun getRetrofit(): Retrofit {
-        Log.d(null, "Getting retrofit");
+        Log.d("ApiClient", "Getting Retrofit")
         if (!::retrofit.isInitialized) {
-            Log.d(null, "Retrofit not initialized");
+            Log.d("ApiClient", "Retrofit not initialized")
             throw IllegalStateException("Retrofit not initialized")
         }
 
-        Log.d(null, "Got retrofit client");
+        Log.d("ApiClient", "Got Retrofit client")
         return retrofit
     }
 }

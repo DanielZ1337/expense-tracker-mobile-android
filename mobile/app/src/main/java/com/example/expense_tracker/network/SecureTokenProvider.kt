@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import android.util.Log
 
 class SecureTokenProvider private constructor(context: Context) : TokenProvider {
 
@@ -36,14 +37,18 @@ class SecureTokenProvider private constructor(context: Context) : TokenProvider 
     private val tokenKey = "auth_token"
 
     override fun getToken(): String? {
-        return prefs.getString(tokenKey, null)
+        val token = prefs.getString(tokenKey, null)
+        Log.d("SecureTokenProvider", "Retrieved token: $token")
+        return token
     }
 
     override fun saveToken(token: String) {
         prefs.edit().putString(tokenKey, token).apply()
+        Log.d("SecureTokenProvider", "Token saved successfully.")
     }
 
     override fun clearToken() {
         prefs.edit().remove(tokenKey).apply()
+        Log.d("SecureTokenProvider", "Token cleared successfully.")
     }
 }

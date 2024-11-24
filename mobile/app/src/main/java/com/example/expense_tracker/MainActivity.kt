@@ -1,74 +1,94 @@
+// MainActivity.kt
 package com.example.expense_tracker
 
+import android.content.Intent
 import android.net.http.HttpException
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
-import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.navigation.NavigationView
-import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
-import androidx.drawerlayout.widget.DrawerLayout
+import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
-import com.example.expense_tracker.databinding.ActivityMainBinding
-import com.example.expense_tracker.network.ApiClient
+import com.example.expense_tracker.databinding.ActivityStartBinding
 import com.example.expense_tracker.network.repositories.AuthRepository
-import com.example.expense_tracker.network.repositories.UserRepository
-import com.example.expense_tracker.network.requests.LoginRequest
-import com.example.expense_tracker.network.requests.RegisterRequest
 import kotlinx.coroutines.launch
 import java.io.IOException
 
-
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var appBarConfiguration: AppBarConfiguration
-    private lateinit var binding: ActivityMainBinding
+    private lateinit var binding: ActivityStartBinding
     private lateinit var authRepository: AuthRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ApiClient.init(this);
-
-        authRepository = AuthRepository()
-
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityStartBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setSupportActionBar(binding.appBarMain.toolbar)
+        // Initialize repositories
+        authRepository = AuthRepository.getInstance()
 
-        binding.appBarMain.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null)
-                .setAnchorView(R.id.fab).show()
+        // Initially disable buttons to prevent user interaction until status is confirmed
+        binding.loginButton.isEnabled = false
+        binding.signUpButton.isEnabled = false
+
+        // Optionally, show a progress bar while checking login status
+        binding.progressBar.visibility = View.VISIBLE
+
+        // Check if the user is logged in
+        checkLoginStatus()
+
+        // Set up click listeners for Login and Signup buttons
+        binding.signUpButton.setOnClickListener {
+            val intent = Intent(this, SignupActivity::class.java)
+            startActivity(intent)
         }
-        val drawerLayout: DrawerLayout = binding.drawerLayout
-        val navView: NavigationView = binding.navView
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow
-            ), drawerLayout
-        )
-        setupActionBarWithNavController(navController, appBarConfiguration)
-        navView.setupWithNavController(navController)
 
-        // Set up FAB to trigger API test
-        binding.appBarMain.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Testing API...", Snackbar.LENGTH_LONG)
-                .setAction("Action", null)
-                .setAnchorView(R.id.fab).show()
-
-            // Trigger API test when FAB is clicked
-            testApi()
+        binding.loginButton.setOnClickListener {
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
         }
+    }
+
+    private fun checkLoginStatus() {
+        Log.d("MainActivity", "Checking login status")
+        lifecycleScope.launch {
+            try {
+                val userProfile = authRepository.getSession()
+                if (userProfile != null) {
+                    Log.d("MainActivity", "User is logged in: ${userProfile.user.email}")
+                    navigateToGroupManagement()
+                } else {
+                    Log.d("MainActivity", "User is not logged in or token expired")
+                    showLoginOptions()
+                }
+            } catch (e: IOException) {
+                Log.e("MainActivity", "Network error while checking session", e)
+                Toast.makeText(this@MainActivity, "Network error. Please try again.", Toast.LENGTH_SHORT).show()
+                showLoginOptions()
+            } catch (e: HttpException) {
+                Log.e("MainActivity", "HTTP error while checking session", e)
+                Toast.makeText(this@MainActivity, "Authentication error. Please log in again.", Toast.LENGTH_SHORT).show()
+                showLoginOptions()
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Unexpected error while checking session", e)
+                Toast.makeText(this@MainActivity, "An unexpected error occurred.", Toast.LENGTH_SHORT).show()
+                showLoginOptions()
+            } finally {
+                binding.progressBar.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun navigateToGroupManagement() {
+        val intent = Intent(this, GroupManagementActivity::class.java)
+        startActivity(intent)
+        finish() // Prevent returning to this screen
+    }
+
+    private fun showLoginOptions() {
+        binding.loginButton.isEnabled = true
+        binding.signUpButton.isEnabled = true
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -78,35 +98,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
-    }
-
-    private fun testApi() {
-        lifecycleScope.launch {
-            try {
-                // Login with the new user
-                val loginRequest = LoginRequest(
-                    email = "test@example.com",
-                    password = "password123"
-                )
-                val tokenResponse = authRepository.login(loginRequest)
-                Log.d("MainActivity", "Login successful: $tokenResponse")
-
-                // You can add more API tests here
-
-                val userRepository = UserRepository()
-
-                val userProfileResponse = userRepository.getUserProfile()
-                Log.d("MainActivity", "User profile: $userProfileResponse")
-
-            } catch (e: IOException) {
-                Log.e("MainActivity", "Network error", e)
-            } catch (e: HttpException) {
-                Log.e("MainActivity", "HTTP error", e)
-            } catch (e: Exception) {
-                Log.e("MainActivity", "Unexpected error", e)
-            }
-        }
+        // Implement navigation up if using Navigation Component
+        return super.onSupportNavigateUp()
     }
 }

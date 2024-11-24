@@ -1,5 +1,6 @@
 package com.example.expense_tracker.models
 
+import java.io.Serializable
 import java.time.Instant
 
 data class Token(
@@ -8,5 +9,5 @@ data class Token(
     val token: String,
     val createdAt: Instant,
     val updatedAt: Instant
-)
+) : Serializable
 
