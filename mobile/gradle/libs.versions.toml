@@ -17,6 +17,7 @@ navigationUiKtx = "2.6.0"
 okhttpVersion = "4.11.0"
 retrofitVersion = "2.9.0"
 securityCrypto = "1.1.0-alpha06"
+activity = "1.8.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -40,6 +41,7 @@ moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "mosh
 moshi-adapters = { module = 'com.squareup.moshi:moshi-adapters', version.ref="moshiVersion"}
 moshi-kotlin-codegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshiVersion" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofitVersion" }
+androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 
 
 [plugins]

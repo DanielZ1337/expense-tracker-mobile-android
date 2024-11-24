@@ -1,5 +1,6 @@
 package com.example.expense_tracker.models
 
+import java.io.Serializable
 import java.time.Instant
 
 data class Group(
@@ -10,4 +11,4 @@ data class Group(
     val updatedAt: Instant,
     val members: List<GroupMember>? = null,
     val expenses: List<GroupExpense>? = null
-)
+) : Serializable

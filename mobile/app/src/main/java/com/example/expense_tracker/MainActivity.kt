@@ -1,5 +1,6 @@
 package com.example.expense_tracker
 
+import android.content.Intent
 import android.net.http.HttpException
 import android.os.Bundle
 import android.util.Log
@@ -13,9 +14,11 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.example.expense_tracker.databinding.ActivityMainBinding
+import com.example.expense_tracker.databinding.ActivityStartBinding;
 import com.example.expense_tracker.network.ApiClient
 import com.example.expense_tracker.network.repositories.AuthRepository
 import com.example.expense_tracker.network.repositories.UserRepository
@@ -28,7 +31,7 @@ import java.io.IOException
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
-    private lateinit var binding: ActivityMainBinding
+    private lateinit var binding: ActivityStartBinding
     private lateinit var authRepository: AuthRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,38 +40,29 @@ class MainActivity : AppCompatActivity() {
 
         authRepository = AuthRepository()
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
+
+
+
+        val oldbinding = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityStartBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setSupportActionBar(binding.appBarMain.toolbar)
+        //setSupportActionBar(binding.appBarMain.toolbar)
 
-        binding.appBarMain.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null)
-                .setAnchorView(R.id.fab).show()
+
+        binding.signUpButton.setOnClickListener { view ->
+            val i : Intent = Intent(this, SignupActivity::class.java)
+            startActivity(i)
         }
-        val drawerLayout: DrawerLayout = binding.drawerLayout
-        val navView: NavigationView = binding.navView
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow
-            ), drawerLayout
-        )
-        setupActionBarWithNavController(navController, appBarConfiguration)
-        navView.setupWithNavController(navController)
+
+        binding.loginButton.setOnClickListener { view ->
+            val i : Intent = Intent(this, LoginActivity::class.java)
+            startActivity(i)
+        }
+
 
         // Set up FAB to trigger API test
-        binding.appBarMain.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Testing API...", Snackbar.LENGTH_LONG)
-                .setAction("Action", null)
-                .setAnchorView(R.id.fab).show()
 
-            // Trigger API test when FAB is clicked
-            testApi()
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
