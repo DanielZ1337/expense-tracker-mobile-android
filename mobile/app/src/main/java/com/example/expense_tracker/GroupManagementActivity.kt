@@ -65,7 +65,7 @@ class GroupManagementActivity : AppCompatActivity() {
                     i.putExtra("token", tokenResponse as Serializable) // Needs to be serialisable to pass through intents
                     i.putExtra("userProfile", userProfileResponse as Serializable)
                     i.putExtra("group", item as Serializable)
-
+                    startActivity(i)
 
                 }
                 binding.groupsRecycler.adapter = adapter

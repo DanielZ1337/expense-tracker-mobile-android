@@ -94,6 +94,8 @@ class LoginActivity : AppCompatActivity() {
             val i : Intent = Intent(this, LoginActivity::class.java)
             i.putExtra("token", responseToken!!.token as Serializable) // Needs to be serialisable to pass through intents
             i.putExtra("userProfile", userProfileResponse as Serializable)
+            startActivity(i)
+
 
 
 

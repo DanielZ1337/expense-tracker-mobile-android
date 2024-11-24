@@ -22,6 +22,7 @@ import com.example.expense_tracker.network.responses.UserProfileResponse
 import kotlinx.coroutines.launch
 import okio.IOException
 import retrofit2.HttpException
+import java.io.Serializable
 
 
 class GroupViewActivity : AppCompatActivity() {
@@ -83,16 +84,22 @@ class GroupViewActivity : AppCompatActivity() {
                 Log.e("GroupManagementActivity", "Unexpected error", e)
             }
 
-            binding.groupGoBackButton.setOnClickListener { view ->
-                finish()
-            }
-
-            binding.expensesButton.setOnClickListener { view ->
-
-            }
 
 
 
         }
+
+        binding.groupGoBackButton.setOnClickListener { view ->
+            finish()
+        }
+
+        binding.expensesButton.setOnClickListener { view ->
+            val i : Intent = Intent(this, ExpenseInputActivity::class.java)
+            i.putExtra("userProfile", userProfileResponse as Serializable)
+            startActivity(i)
+
+        }
+
+
     }
 }
